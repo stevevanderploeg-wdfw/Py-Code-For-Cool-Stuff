@@ -1,0 +1,28 @@
+import arcpy
+
+# Define paths
+aprx_path = r"S:\FP\Reg5\GIS\ReportMaps\DataMaps\DataMaps_Rename.aprx"
+map_name = "Main Map"  # Name of the map inside the project
+old_dataset = "FC_TWS_Reaches_All"
+new_dataset = "Reaches_All_Append"
+gdb_path = "S:\\FP\\Reg5\\GIS\\ReportMaps\\TWS_Data.gdb"
+
+# Load project and map
+aprx = arcpy.mp.ArcGISProject("Current")
+map_obj = aprx.listMaps(map_name)[0]
+
+# Loop through layers and replace source if it matches
+for lyr in map_obj.listLayers():
+    if lyr.supports("DATASOURCE") and old_dataset in lyr.dataSource:
+        new_path = f"{gdb_path}\\{new_dataset}"
+        lyr.updateConnectionProperties(lyr.connectionProperties, {
+            'connection_info': {
+                'database': gdb_path
+            },
+            'dataset': new_dataset,
+            'workspace_factory': 'File Geodatabase'
+        })
+        print(f"Updated {lyr.name} to {new_dataset}")
+
+# Save changes
+aprx.save()
