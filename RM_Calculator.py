@@ -51,9 +51,13 @@ try:
         in_routes=route_feature_class,
         route_id_field=route_id_field,
         radius_or_tolerance=search_radius,  # Specify search radius here
-        route_locations = "ALL",
         out_table=output_event_table,
-        out_event_properties="RouteID POINT MEAS"
+        out_event_properties="RouteID POINT MEAS",
+        route_locations="ALL",
+        distance_field="DISTANCE",
+        zero_length_events="NO_ZERO",
+        in_fields="FIELDS",
+        m_direction_offsetting="NO_M_DIR"
     )
     print(f"Step 3: Features located along route and saved to table '{output_event_table}'.")
 
@@ -62,7 +66,7 @@ try:
         in_table=output_event_table,
         out_view="EventTable_View"
     )
-    query = '"LLID" = "RouteID"'  # Field names must match case in file geodatabase
+    query = '"llid" = "RouteID"'  # Field names from CSV are typically lowercase
     arcpy.SelectLayerByAttribute_management(
         in_layer_or_view="EventTable_View",
         selection_type="NEW_SELECTION",
