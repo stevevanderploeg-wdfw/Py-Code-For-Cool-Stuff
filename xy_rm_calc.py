@@ -99,7 +99,7 @@ field_mapping=None,
 index_join_fields="NO_INDEXES"
 )
 print(f"Step 6: Join Field performed on '{output_feature_class}' on '{filtered_table}'.")
-    # Step 7 Select and export feautres > 250ft distance
+    # Step 7 Select and export features > 250ft distance
 
 arcpy.conversion.ExportFeatures(
 in_features = output_feature_class,
