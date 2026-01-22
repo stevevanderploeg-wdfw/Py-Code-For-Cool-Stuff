@@ -62,7 +62,7 @@ try:
         in_table=output_event_table,
         out_view="EventTable_View"
     )
-    query = "llid = RouteID"  # Fixed: Removed nested quotes for file geodatabase
+    query = '"LLID" = "RouteID"'  # Field names must match case in file geodatabase
     arcpy.SelectLayerByAttribute_management(
         in_layer_or_view="EventTable_View",
         selection_type="NEW_SELECTION",
