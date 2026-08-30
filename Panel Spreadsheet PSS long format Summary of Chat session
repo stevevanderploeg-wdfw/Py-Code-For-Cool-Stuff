@@ -1,0 +1,130 @@
+# Population SQL Transformation Work
+
+## Summary
+
+Generated Access SQL queries to convert population-specific wide tables into a common long-format structure. Each query produces one record per population/year and excludes the `Sort Order` field.
+
+Because the combined `UNION ALL` query exceeded Access's complexity limit, the recommended approach is to use individual append queries for each saved population query.
+
+## Standard Output Fields
+
+All population queries use the same 28 output fields, in this order:
+
+```text
+Population
+StrmName
+ReachCode
+Year
+Panel
+Priority
+notes
+Point
+LRM_OG
+URM_OG
+LRM
+URM
+ReasonShifted
+Surveyed
+Dropped
+Duplicate
+Reason_Code
+Shifted
+ReachLink
+GRTS
+STREAM_REACH_Id
+Season
+LLID
+stream_lut_id
+site_id
+lat_dd
+lon_dd
+Comments
+```
+
+The annual data is sourced from fields such as:
+
+```text
+2010_LRM
+2010_URM
+2010ReasonShifted
+2010Surveyed
+2010Dropped
+2010Duplicate
+2010ReasonDropped
+2010Shifted
+2010Comments
+```
+
+with the corresponding year substituted for each annual section.
+
+## Saved Query Names
+
+The population queries use this naming convention:
+
+```text
+qry_PSS_Long_Cedar
+qry_PSS_Long_Coweeman
+qry_PSS_Long_EFLewis
+qry_PSS_Long_ElochSka
+qry_PSS_Long_Grays
+qry_PSS_Long_Green
+qry_PSS_Long_Kalama
+qry_PSS_Long_LowerCowlitz
+qry_PSS_Long_LowerGorge
+qry_PSS_Long_LowerLewis
+qry_PSS_Long_NFToutle
+qry_PSS_Long_SalmonCreek
+qry_PSS_Long_SFToutle
+qry_PSS_Long_Washougal
+```
+
+The `ElochSka` query is the only one where the population name was changed. The source table is `Elochoman Skamokawa`, while the population value is `Elochoman, Skamokawa`.
+
+## Current Field Mapping
+
+| Population | Point | Lower RM | Upper RM | Reach field | Stream field | LLID field |
+|---|---|---|---|---|---|---|
+| Cedar | `Point RM` | `RM Btm` | `RM Top` | `ReachCode` | `StreamName #` | `wc_llid_nr` |
+| Coweeman | `Point RM` | `RM Btm` | `RM Top` | `ReachCode` | `StreamName #` | `wc_llid_nr` |
+| EF Lewis | `Point RM` | `Lwr_RM` | `Upr_RM` | `ReachCode` | `StrmName` | `wc_llid_nr` |
+| Elochoman, Skamokawa | `Point RM` | `LowerRM` | `UpperRM` | `ReachCode` | `Streamname` | `wc_llid_nr` |
+| Grays | `Point RM` | `RM Btm` | `RM Top` | `ReachCode` | `StreamName` | `wc_llid_nr` |
+| Green | `RM Point` | `RM Btm` | `RM Top` | `Reach Code` | `Stream Name` | `wc_llid_nr` |
+| Kalama | `Point RM` | `F_RM` | `T_RM` | `GPS Code` | `StreamName` | `LLID` |
+| Lower Cowlitz | `Point RM` | `RM Lower` | `RM Upper` | `REACH_CODE` | `StrmName` | `LLID` |
+| Lower Gorge | `Point RM` | `Lwr_RM` | `Upr_RM` | `ReachCode` | `StrmName` | `LLID` |
+| Lower Lewis | `Point RM` | `Lwr_RM` | `Upr_RM` | `ReachCode` | `StrmName` | `WC_LLID_NR` |
+| NF Toutle | `Point RM` | `F_RM` | `T_RM` | `Ident_GPS` | `StreamName` | `LLID` |
+| Salmon Creek | `Point RM` | `Lwr_RM` | `Upr_RM` | `ReachCode` | `StrmName #` | `RID` |
+| SF Toutle | `Point RM` | `RM Lower` | `RM Upper` | `GPSName` | `StreamName` | `wc_llid_nr` |
+| Washougal | `Point RM` | `Lwr_RM` | `Upr_RM` | `ReachCode` | `StrmName` | `LLID` |
+
+## Population-Specific Exceptions
+
+- **Cedar:** Corrected LLID field is `wc_llid_nr`; an earlier mapping incorrectly listed `xwc_llid_nr`.
+- **Lower Cowlitz:** No 2012 data. The 2012 `UNION ALL` section was removed.
+- **Salmon Creek:** No 2010 data. The query begins with 2011. The source table has no `notes` field, so the query generates it with:
+  
+  ```sql
+  NULL AS notes
+  ```
+
+- **SF Toutle:** The reach field is `GPSName`, not `ReachCode`.
+- **Elochoman, Skamokawa:** The table name is `Elochoman Skamokawa`, but the population value is `Elochoman, Skamokawa`.
+- **All populations:** `Sort Order` is excluded.
+
+## Access Issue Encountered
+
+Access prompted for:
+
+```text
+Enter Parameter Value: Query2.Year
+```
+
+This was caused by an internal Access query/reference issue rather than an error in the year expressions. Creating a new query, pasting the SQL into it, and renaming the query resolved the problem.
+
+## Final Assembly Approach
+
+The combined query using all population queries exceeded Access's query-complexity limit. The planned solution is to create one append query per population, inserting each saved long-format query into the common destination table.
+
+Each append query should explicitly list the destination fields and select the corresponding fields from one source query. This avoids the complexity limit and makes it easier to verify record counts population by population.
